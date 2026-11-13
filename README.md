@@ -13,6 +13,8 @@
 
 ![Boss Rehearsal authoring workspace with a video timeline and manually defined practice cues](docs/assets/workspace.png)
 
+[Open the app](https://boss-rehearsal.vercel.app/)
+
 ## Practice the moment you keep missing
 
 A useful tell can disappear inside a long fight recording. Boss Rehearsal lets you isolate it: play a short lead-in, freeze at a cue, respond with a fresh key or gamepad press, then inspect individual feedback before moving on.

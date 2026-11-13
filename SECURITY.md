@@ -8,7 +8,7 @@ Only the current main source is maintained at this stage. There is no promised r
 
 ## Report privately
 
-If GitHub private vulnerability reporting is enabled, use [Report a vulnerability](https://github.com/ufodia/boss-rehearsal/security/advisories/new). Do not publish exploit details or private video/lesson content in an issue.
+Use [Report a vulnerability](https://github.com/ufodia/boss-rehearsal/security/advisories/new). Private vulnerability reporting is enabled for this repository. Do not publish exploit details or private video/lesson content in an issue.
 
 If that private channel is unavailable, ask the maintainer for a private reporting route without sensitive details. Provide the affected commit, reproduction steps, impact and a minimal synthetic lesson through the private route.
 
