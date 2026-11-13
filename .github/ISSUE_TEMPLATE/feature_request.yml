@@ -1,0 +1,21 @@
+name: Feature request
+description: Explain a practice or authoring need and a focused improvement.
+title: '[Idea]: '
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to practice?
+      description: Describe the recording/decision problem without private footage.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Current workaround and trade-offs

@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible authoring, media or practice-state problem.
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: 'Prefer the included demo or synthetic media. Review lessons and trainers before attaching them; portable exports may embed the original clip. Follow SECURITY.md for vulnerabilities.'
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps and cue settings
+      description: Include mode, cue time, lead-in, playback rate and expected input where relevant.
+    validations:
+      required: true
+  - type: dropdown
+    id: input
+    attributes:
+      label: Input path
+      options:
+        - Keyboard
+        - Physical gamepad
+        - Simulated gamepad test
+        - Media / authoring / import / export
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, platform and source commit
+    validations:
+      required: true
+  - type: textarea
+    id: media
+    attributes:
+      label: Media or hardware details
+      description: Codec, duration, file size or controller mapping; avoid private footage.
