@@ -17,6 +17,7 @@ let loadEpoch = 0;
 let includeVideo = true;
 let unsaved = false;
 let playerHtml: string | null = null;
+let returnToPractice = false;
 let recordingInput = false;
 let message = 'Loading the original training clip. Your footage stays on your computer.';
 let messageKind: 'info' | 'success' | 'error' = 'info';
@@ -76,7 +77,11 @@ function validityError(): string | null {
     validateLesson(lesson, duration ?? undefined);
     return null;
   } catch (error) {
-    return error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'Review the lesson before practicing.';
+    return error instanceof SyntaxError
+      ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+      : error instanceof Error
+        ? error.message
+        : 'Review the lesson before practicing.';
   }
 }
 function canPractice(): boolean {
@@ -129,7 +134,10 @@ function stopPractice(): void {
     frame.remove();
   }
   const dialog = document.getElementById('practice-dialog') as HTMLDialogElement | null;
-  if (dialog?.open) dialog.close();
+  if (dialog?.open) {
+    dialog.close();
+    returnToPractice = true;
+  }
 }
 function revokeMedia(): void {
   pauseEditor();
@@ -266,7 +274,14 @@ async function loadMedia(
   } catch (error) {
     if (probed) URL.revokeObjectURL(probed.url);
     if (epoch === loadEpoch)
-      tell(error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'The video could not be loaded.', 'error');
+      tell(
+        error instanceof SyntaxError
+          ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+          : error instanceof Error
+            ? error.message
+            : 'The video could not be loaded.',
+        'error',
+      );
   } finally {
     if (epoch === loadEpoch) {
       loadingVideo = false;
@@ -299,7 +314,14 @@ async function loadSample(): Promise<void> {
   } catch (error) {
     if (epoch === loadEpoch) {
       loadingVideo = false;
-      tell(error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'The sample could not be loaded.', 'error');
+      tell(
+        error instanceof SyntaxError
+          ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+          : error instanceof Error
+            ? error.message
+            : 'The sample could not be loaded.',
+        'error',
+      );
       render();
     }
   }
@@ -308,7 +330,111 @@ function inputOptions(current: string): string {
   return `<optgroup label="Keyboard">${keyboardInputs.map((input) => `<option value="${input}" ${input === current ? 'selected' : ''}>${h(inputLabel(input))}</option>`).join('')}</optgroup><optgroup label="Gamepad buttons">${gamepadInputs.map((input) => `<option value="${input}" ${input === current ? 'selected' : ''}>${h(inputLabel(input))}</option>`).join('')}</optgroup>`;
 }
 
+type FocusTarget = { selector: string; index: number };
+const focusRoot = root!;
+const focusAttributes = [
+  'data-action',
+  'data-id',
+  'data-mode',
+  'data-field',
+  'data-part-field',
+  'data-cue-field',
+  'data-lesson-field',
+];
+function focusTarget(element: Element | null): FocusTarget | null {
+  if (!element || !focusRoot.contains(element)) return null;
+  let selector: string;
+  if (element.id) selector = `#${CSS.escape(element.id)}`;
+  else {
+    const part = element.closest('[data-part-id]');
+    if (part && element.hasAttribute('data-part-field'))
+      selector = `[data-part-id="${CSS.escape(part.getAttribute('data-part-id')!)}"] [data-part-field="${CSS.escape(element.getAttribute('data-part-field')!)}"]`;
+    else if (element.matches('a[href]'))
+      selector = `a[href="${CSS.escape(element.getAttribute('href')!)}"]`;
+    else {
+      const keys = focusAttributes.filter((key) => element.hasAttribute(key));
+      selector =
+        element.tagName.toLowerCase() +
+        keys.map((key) => `[${key}="${CSS.escape(element.getAttribute(key)!)}"]`).join('');
+      if (!keys.length && element.hasAttribute('aria-label'))
+        selector += `[aria-label="${CSS.escape(element.getAttribute('aria-label')!)}"]`;
+    }
+  }
+  return { selector, index: [...focusRoot.querySelectorAll(selector)].indexOf(element) };
+}
+let tabIntent = false;
+let tabDestination: FocusTarget | null = null;
+let deferredFocus: FocusTarget | null = null;
+focusRoot.addEventListener('keydown', (event) => {
+  if (event.key !== 'Tab') return;
+  const scope = (event.target as Element).closest('dialog[open]') ?? focusRoot;
+  const controls = [
+    ...scope.querySelectorAll<HTMLElement>(
+      'a[href],button:not(:disabled),input:not(:disabled):not([type="hidden"]),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]',
+    ),
+  ].filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
+  const index = controls.indexOf(document.activeElement as HTMLElement);
+  if (index < 0) return;
+  tabIntent = true;
+  tabDestination = focusTarget(controls[index + (event.shiftKey ? -1 : 1)] ?? null);
+  setTimeout(() => {
+    tabIntent = false;
+    tabDestination = null;
+  }, 0);
+});
+function retainFocus(): () => void {
+  const active = document.activeElement;
+  const action = (active as HTMLElement | null)?.dataset.action;
+  const target = tabIntent
+    ? tabDestination
+    : (focusTarget(active) ?? (active === document.body ? deferredFocus : null));
+  const tabbing = tabIntent;
+  const editable = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
+  const start = editable ? active.selectionStart : null;
+  const end = editable ? active.selectionEnd : null;
+  return () => {
+    if (!target) {
+      if (tabbing) deferredFocus = null;
+      return;
+    }
+    const restore = () => {
+      const replacement = focusRoot.querySelectorAll<HTMLElement>(target.selector)[target.index];
+      const fallback =
+        !replacement && action === 'remove-cue'
+          ? focusRoot.querySelector<HTMLElement>('.cue-select[aria-current="true"]')
+          : !replacement && action === 'remove-part'
+            ? focusRoot.querySelector<HTMLElement>('[data-action="add-part"]')
+            : null;
+      if (fallback) {
+        deferredFocus = null;
+        fallback.focus({ preventScroll: true });
+        return;
+      }
+      if (
+        !replacement ||
+        replacement.matches(':disabled') ||
+        !replacement.getClientRects().length
+      ) {
+        deferredFocus = target;
+        return;
+      }
+      deferredFocus = null;
+      replacement.focus({ preventScroll: true });
+      if (
+        !tabbing &&
+        start !== null &&
+        end !== null &&
+        (replacement instanceof HTMLInputElement || replacement instanceof HTMLTextAreaElement)
+      )
+        replacement.setSelectionRange(start, end);
+    };
+    if (tabbing) setTimeout(restore, 0);
+    else restore();
+  };
+}
+
 function render(): void {
+  const restoreFocus = retainFocus();
   pauseEditor();
   const cue = selectedCue();
   const selectedIndex = lesson.cues.indexOf(cue);
@@ -326,6 +452,15 @@ function render(): void {
   <input id="video-file" type="file" accept="video/mp4,video/webm,.mp4,.webm" aria-label="Upload practice video" hidden><input id="lesson-file" type="file" accept="application/json,.json" aria-label="Import lesson" hidden><dialog id="practice-dialog" aria-labelledby="practice-dialog-title"><div class="practice-dialog-header"><div><p class="eyebrow">PRACTICE ROOM</p><h2 id="practice-dialog-title">${h(lesson.name)}</h2></div><button class="button outline" data-action="close-practice">${icon('close')} Close practice</button></div>${playerHtml ? '<iframe id="practice-player" data-testid="player-frame" title="Boss Rehearsal practice player" allow="autoplay" sandbox="allow-scripts allow-same-origin"></iframe>' : ''}</dialog>`;
   bindEvents();
   setupEditorVideo();
+  if (!playerHtml) {
+    restoreFocus();
+    if (returnToPractice) {
+      document
+        .querySelector<HTMLButtonElement>('[data-action="practice"]')
+        ?.focus({ preventScroll: true });
+      returnToPractice = false;
+    }
+  }
   if (playerHtml) {
     (document.getElementById('practice-player') as HTMLIFrameElement).srcdoc = playerHtml;
     (document.getElementById('practice-dialog') as HTMLDialogElement).showModal();
@@ -510,7 +645,14 @@ function bindEvents(): void {
       }
       render();
     } catch (error) {
-      tell(error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'That action could not be completed.', 'error');
+      tell(
+        error instanceof SyntaxError
+          ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+          : error instanceof Error
+            ? error.message
+            : 'That action could not be completed.',
+        'error',
+      );
       render();
     }
   };
@@ -540,7 +682,14 @@ function bindEvents(): void {
       } else return;
       render();
     } catch (error) {
-      tell(error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'Check that value.', 'error');
+      tell(
+        error instanceof SyntaxError
+          ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+          : error instanceof Error
+            ? error.message
+            : 'Check that value.',
+        'error',
+      );
       render();
     }
   };
@@ -563,7 +712,14 @@ function bindEvents(): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file)
       void importLesson(file).catch((error) => {
-        tell(error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'Could not open the lesson.', 'error');
+        tell(
+          error instanceof SyntaxError
+            ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+            : error instanceof Error
+              ? error.message
+              : 'Could not open the lesson.',
+          'error',
+        );
         render();
       });
   });
@@ -599,7 +755,14 @@ document.addEventListener(
       tell(`Expected input set to ${inputLabel(event.code)}.`, 'success');
       render();
     } catch (error) {
-      tell(error instanceof SyntaxError ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.' : error instanceof Error ? error.message : 'Could not record that key.', 'error');
+      tell(
+        error instanceof SyntaxError
+          ? 'This is not valid Boss Rehearsal lesson JSON. Choose a JSON file exported in the documented format.'
+          : error instanceof Error
+            ? error.message
+            : 'Could not record that key.',
+        'error',
+      );
       render();
     }
   },

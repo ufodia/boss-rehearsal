@@ -16,7 +16,7 @@
 }
 body {
   margin: 0;
-  min-width: 340px;
+  min-width: 320px;
   font-size: 14px;
 }
 button,
@@ -623,7 +623,7 @@ main {
 }
 .timeline-cue > span {
   font: 9px var(--mono);
-  color: #7c6c83;
+  color: #c0b2c8;
   background: #252631;
   width: 17px;
   height: 17px;
@@ -1743,5 +1743,29 @@ dialog::backdrop {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .site-header {
+    flex-wrap: wrap;
+    padding-block: 12px;
+  }
+  .brand {
+    flex: 1 0 100%;
+  }
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .playhead-toolbar > .button {
+    font-size: 12px;
+  }
+}
+@media (forced-colors: active) {
+  .timeline-cue.selected,
+  .cue-row.selected {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
   }
 }
