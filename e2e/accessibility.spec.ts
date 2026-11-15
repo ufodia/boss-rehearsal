@@ -7,6 +7,33 @@ async function tabTo(page: Page, target: Locator) {
   }
   throw Error('Control is not reachable with Tab');
 }
+test('editing a cue keeps the next Tab target visible in a short viewport', async ({ page }) => {
+  for (const viewport of [
+    { width: 640, height: 512 },
+    { width: 320, height: 256 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await readyEditor(page);
+    const title = page.getByRole('textbox', { name: 'Cue title', exact: true });
+    const time = page.getByRole('spinbutton', { name: 'Cue time in seconds', exact: true });
+    await tabTo(page, title);
+    await title.evaluate((el) => {
+      window.scrollBy(0, el.getBoundingClientRect().bottom - (innerHeight - 8));
+    });
+    await expect(title).toBeInViewport({ ratio: 1 });
+    await page.keyboard.press('End');
+    await page.keyboard.type(' edited');
+    await page.keyboard.press('Tab');
+    await expect(time).toBeFocused();
+    await expect
+      .soft(time, `Tab target at ${viewport.width}x${viewport.height}`)
+      .toBeInViewport({ ratio: 1 });
+    await page.keyboard.press('Shift+Tab');
+    await expect(title).toBeFocused();
+    await expect(title).toBeInViewport({ ratio: 1 });
+  }
+});
+
 test('reflow and keyboard cue editing retain the current control', async ({ page }) => {
   await readyEditor(page);
   const name = page.getByRole('textbox', { name: 'Lesson name', exact: true });
