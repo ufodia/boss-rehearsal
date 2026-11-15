@@ -91,6 +91,8 @@ npm run test:e2e
 
 If a drill helps you understand a moment you kept missing, you can [buy ufodia a coffee](https://buymeacoffee.com/ufodia). Support is voluntary and helps maintain media handling, input support, tests and authoring tools. Everyone gets the same open-source application.
 
+You can also support this work through [GitHub Sponsors](https://github.com/sponsors/ufodia).
+
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for changes and reproducible reports, and [SECURITY.md](SECURITY.md) for sensitive findings.
 
 ## License
