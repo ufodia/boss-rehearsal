@@ -90,7 +90,7 @@ test('real video trials enforce fresh input, separate scores, interruption, skip
     await expect(player.getByRole('button', { name: 'Next cue', exact: true })).toBeDisabled();
     await player.keyboard.up('ArrowLeft');
     await expect(player.getByRole('button', { name: 'Next cue', exact: true })).toBeEnabled();
-    await player.screenshot({ path: 'docs/assets/player.png', fullPage: true });
+    await player.screenshot({ path: 'test-results/player.png', fullPage: true });
     await player.getByRole('button', { name: 'Next cue', exact: true }).click();
     await expect(phase).toHaveAttribute('data-phase', 'armed');
     await player.getByRole('button', { name: 'Pause trial', exact: true }).click();

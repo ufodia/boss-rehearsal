@@ -112,7 +112,7 @@ test('finite original video supports cue CRUD, portable save/reopen, and embedde
   expect(presented.currentTime).toBeCloseTo(presented.mediaTime, 1);
   expect(presented.paused).toBe(true);
   expect(presented.readyState).toBeGreaterThanOrEqual(3);
-  await page.screenshot({ path: 'docs/assets/workspace.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/workspace.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
     true,

@@ -131,7 +131,7 @@ a:focus-visible {
 }
 .header-caption b {
   font-weight: 400;
-  color: #636c78;
+  color: #7c848e;
 }
 .header-actions {
   display: flex;
@@ -306,7 +306,7 @@ main {
   gap: 6px;
   font: 10px var(--mono);
   letter-spacing: 1px;
-  color: #7f8794;
+  color: #878e9a;
 }
 .lesson-strip input {
   background: transparent !important;
@@ -335,7 +335,7 @@ main {
 .lesson-count > span {
   font: 9px/1.8 var(--mono);
   letter-spacing: 0.6px;
-  color: #767f8e;
+  color: #858d9a;
 }
 .lesson-count > strong {
   font: 24px var(--mono);
@@ -419,7 +419,7 @@ main {
   margin-bottom: 6px;
   font-size: 10px;
   letter-spacing: 1px;
-  color: #747e8e;
+  color: #818a98;
 }
 .video-heading h2 {
   font-size: 16px;
@@ -553,7 +553,7 @@ main {
   gap: 11px;
   font: 9px var(--mono);
   letter-spacing: 0.5px;
-  color: #6c7b8e;
+  color: #828f9f;
 }
 .playhead-caption > strong {
   font: 17px var(--mono);
@@ -573,7 +573,7 @@ main {
   display: flex;
   justify-content: space-between;
   font: 9px var(--mono);
-  color: #62758a;
+  color: #7a8a9c;
 }
 .cue-track {
   height: 41px;
@@ -682,7 +682,7 @@ main {
 }
 .panel-heading .eyebrow {
   font-size: 10px;
-  color: #727e8f;
+  color: #7f8a99;
   letter-spacing: 0.9px;
   margin-bottom: 7px;
 }
@@ -694,7 +694,7 @@ main {
 }
 .cue-cap {
   font: 11px var(--mono);
-  color: #6b7d91;
+  color: #8997a7;
   background: #242d39;
   border: 1px solid #3a475a;
   border-radius: 4px;
@@ -735,7 +735,7 @@ main {
   text-align: left;
 }
 .cue-index {
-  color: #77849a;
+  color: #8692a5;
   font: 11px var(--mono);
   padding-right: 13px;
   border-right: 1px solid #3d4a5e;
@@ -763,7 +763,7 @@ main {
   margin-top: 5px;
 }
 .cue-row.selected .cue-title small {
-  color: #977d91;
+  color: #a38d9e;
 }
 .cue-time {
   font: 12px var(--mono);
@@ -822,7 +822,7 @@ main {
 }
 .selected-cue-index {
   font: 26px var(--mono);
-  color: #6a4b60;
+  color: #988391;
 }
 .inspector-fields {
   display: flex;
